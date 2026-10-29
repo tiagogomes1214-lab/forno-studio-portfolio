@@ -193,6 +193,7 @@ export default function Admin() {
           <div><span><ShoppingBag /> Pedidos</span><strong>{orders.length}</strong><small>Todos os pedidos registrados</small></div>
           <div><span><Package /> Em andamento</span><strong>{orders.filter((order) => !["Concluído", "Cancelado"].includes(order.status)).length}</strong><small>Precisam de atenção</small></div>
           <div><span><Pizza /> Produtos ativos</span><strong>{products.filter((product) => product.active).length}</strong><small>Itens no cardápio</small></div>
+          <div><span><ShoppingBag /> Valor dos pedidos</span><strong>{money(orders.filter((order) => order.status !== "Cancelado").reduce((sum, order) => sum + order.total, 0))}</strong><small>Soma demonstrativa, sem cancelados</small></div>
         </div>
 
         <div className="admin-tabs">
