@@ -11,21 +11,21 @@ async function request(url: string, options?: RequestInit): Promise<Response> {
   try {
     return await fetch(url, options);
   } catch {
-    throw new Error(`Não foi possível conectar à API (\${API_URL}). Confira se NEXT_PUBLIC_API_URL está configurada na Vercel e se o serviço do Render está ativo.`);
+    throw new Error(`Não foi possível conectar à API (${API_URL}). Confira se NEXT_PUBLIC_API_URL está configurada na Vercel e se o serviço do Render está ativo.`);
   }
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const response = await request(`\${API_URL}/api/products`, { cache: "no-store" });
+  const response = await request(`${API_URL}/api/products`, { cache: "no-store" });
   if (!response.ok) throw new Error("Não foi possível carregar o cardápio.");
   return response.json();
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const normalizedPath = path.startsWith("/") ? path : `/\${path}`;
-  const response = await request(`\${API_URL}\${normalizedPath}`, options);
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const response = await request(`${API_URL}${normalizedPath}`, options);
   if (!response.ok) {
-    let message = `A API respondeu com erro (HTTP \${response.status}).`;
+    let message = `A API respondeu com erro (HTTP ${response.status}).`;
     try {
       const data = await response.json();
       if (typeof data.detail === "string") message = data.detail;
