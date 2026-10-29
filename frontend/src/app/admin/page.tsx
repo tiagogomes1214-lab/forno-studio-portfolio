@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { apiRequest, money, type Order, type Product } from "@/lib/api";
 import { LogOut, Package, Pizza, RefreshCw, ShoppingBag } from "lucide-react";
 
@@ -146,7 +147,7 @@ export default function Admin() {
   if (!logged) {
     return (
       <main className="admin-login">
-        <a href="/" className="admin-back">← Voltar para a loja</a>
+        <Link href="/" className="admin-back">← Voltar para a loja</Link>
         <form className="admin-login-card" onSubmit={login}>
           <span className="brand-mark">F.</span>
           <p className="eyebrow red">ÁREA RESTRITA</p>
@@ -173,7 +174,7 @@ export default function Admin() {
   return (
     <main className="admin-page">
       <header className="admin-header">
-        <a href="/" className="brand"><span className="brand-mark">F.</span><span>FORNO <small>ADMINISTRAÇÃO</small></span></a>
+        <Link href="/" className="brand"><span className="brand-mark">F.</span><span>FORNO <small>ADMINISTRAÇÃO</small></span></Link>
         <div>
           <span className="admin-live"><i /> Painel conectado</span>
           <button className="icon-button" onClick={logout} aria-label="Sair"><LogOut /></button>
