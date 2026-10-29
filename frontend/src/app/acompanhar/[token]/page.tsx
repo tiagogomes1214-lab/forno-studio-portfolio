@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, Bike, CheckCircle2, ChefHat, Circle, Clock3, CreditCard, PackageCheck, RefreshCw, ShoppingBag } from "lucide-react";
 import { API_URL, money } from "@/lib/api";
 
@@ -76,13 +77,13 @@ export default function TrackOrderPage() {
   return (
     <main className="tracking-page">
       <header className="tracking-nav">
-        <a href="/" className="brand"><span className="brand-mark">F.</span><span>FORNO <small>STUDIO PIZZERIA</small></span></a>
-        <a href="/" className="tracking-back"><ArrowLeft size={15} /> Voltar à loja</a>
+        <Link href="/" className="brand"><span className="brand-mark">F.</span><span>FORNO <small>STUDIO PIZZERIA</small></span></Link>
+        <Link href="/" className="tracking-back"><ArrowLeft size={15} /> Voltar à loja</Link>
       </header>
       <section className="tracking-content">
         <p className="eyebrow red">ACOMPANHAMENTO DO PEDIDO</p>
         {loading && <div className="tracking-card tracking-message"><RefreshCw size={22} className="tracking-spin"/><h1>Buscando seu pedido...</h1><p>Estamos consultando as informações mais recentes.</p></div>}
-        {!loading && error && <div className="tracking-card tracking-message"><ShoppingBag size={30}/><h1>Não encontramos esse pedido.</h1><p>{error}</p><a className="button button-dark" href="/">Voltar à loja</a></div>}
+        {!loading && error && <div className="tracking-card tracking-message"><ShoppingBag size={30}/><h1>Não encontramos esse pedido.</h1><p>{error}</p><Link className="button button-dark" href="/">Voltar à loja</Link></div>}
         {!loading && order && <>
           <div className="tracking-title-row">
             <div><h1>Pedido <em>#{String(order.id).padStart(4, "0")}</em></h1><p>Obrigado por pedir no Forno Studio. Acompanhe cada etapa por aqui.</p></div>
