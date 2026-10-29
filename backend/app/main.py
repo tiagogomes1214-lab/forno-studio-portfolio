@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from .database import Base, engine, get_db
 from .models import Order, OrderItem, Product
-from .schemas import CheckoutOut, OrderIn, OrderOut, ProductIn, ProductOut, TrackingOut
+from .schemas import CheckoutOut, OrderIn, OrderOut, OrderStatusUpdate, ProductIn, ProductOut, TrackingOut
 
 SEED_PRODUCTS = [
     {"name":"Margherita Classica","description":"Molho da casa, fior di latte, manjericão fresco e azeite.","category":"Clássicas","price":39.90,"image":"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85","badge":"Favorita"},
@@ -75,7 +75,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Forno Studio API", version="1.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",") if origin.strip()],
+    allow_origins=[origin.strip().rstrip("/") for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -364,11 +364,8 @@ def admin_orders(db: Session = Depends(get_db)):
 
 
 @app.patch("/api/admin/orders/{order_id}/status", response_model=OrderOut, dependencies=[Depends(require_admin)])
-def update_order_status(order_id: int, payload: dict, db: Session = Depends(get_db)):
-    allowed = {"Aguardando pagamento", "Recebido", "Em preparo", "Saiu para entrega", "Pronto para retirada", "Concluído", "Cancelado"}
-    new_status = payload.get("status")
-    if new_status not in allowed:
-        raise HTTPException(422, "Status inválido.")
+def update_order_status(order_id: int, payload: OrderStatusUpdate, db: Session = Depends(get_db)):
+    new_status = payload.status
     order = db.query(Order).options(selectinload(Order.items)).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(404, "Pedido não encontrado.")
