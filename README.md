@@ -98,6 +98,31 @@ Após o deploy, abra `https://SEU-SERVICO.onrender.com/api/health`. Deve retorna
 - A API em `DEMO_MODE=true` substitui nome, telefone, endereço e observações por dados fictícios antes de gravar o pedido; não deixe o cliente inserir informação real. Pagamentos online ficam desativados.
 - O acesso administrativo funciona somente com `ADMIN_USERNAME` e `ADMIN_PASSWORD` definidos no backend.
 
+## Diagnóstico rápido de publicação
+
+Se o painel administrativo mostrar erro ao entrar:
+1. Abra a API em `https://forno-studio-api.onrender.com/api/health`. O resultado esperado é `{"status":"ok","service":"Forno Studio API"}`.
+2. Na Vercel, confirme `NEXT_PUBLIC_API_URL=https://forno-studio-api.onrender.com` e `NEXT_PUBLIC_DEMO_MODE=true`. Não coloque barra no final da URL.
+3. Depois de alterar uma variável `NEXT_PUBLIC_*`, faça um novo deploy na Vercel; ela é aplicada durante a compilação.
+4. No Render, confira se `CORS_ORIGINS` contém a URL pública exata da Vercel e se `ADMIN_USERNAME` e `ADMIN_PASSWORD` estão preenchidas. Não compartilhe esses valores.
+5. Se a tela retornar um código HTTP, use-o para diferenciar credenciais inválidas (401), configuração ausente (503), rota não encontrada (404) e falha de conexão/CORS.
+
+A camada de chamadas da API agora normaliza barras finais e apresenta uma mensagem mais útil quando o navegador não consegue conectar. O backend também normaliza as origens CORS e valida o status do pedido com um schema explícito.
+
+## Melhorias de portfólio incluídas
+
+- Metadados para compartilhamento em redes sociais (Open Graph/Twitter) e idioma/tema definidos.
+- Rotas `/robots.txt` e `/sitemap.xml` para descoberta básica do site; área administrativa e links de acompanhamento ficam fora da indexação.
+- Chamadas à API com tratamento de erro de rede e indicação da URL configurada.
+- Validação tipada dos status de pedidos no backend e normalização de origens CORS.
+
+## Próximos passos antes de usar com clientes reais
+
+- Testar ponta a ponta: cardápio, carrinho, pedido demo, link de acompanhamento, login administrativo, alteração de status e edição de produtos.
+- Adicionar testes automatizados de API, limitação de tentativas de login, sessões seguras com expiração e logs sem dados pessoais.
+- Validar acessibilidade, desempenho móvel, imagens e links de contato/endereço antes de apresentar como projeto comercial.
+- Só depois planejar pagamentos reais, webhooks em produção, backups e políticas de privacidade. O modo demo deve continuar ligado no portfólio.
+
 ## Segurança e limites
 
 Esta versão é para portfólio/estudo, não uma operação de restaurante real. Antes de receber pedidos verdadeiros, será necessário revisão de segurança, proteção contra abuso (rate limiting), política de privacidade e retenção de dados, backups, tratamento de cancelamentos, monitoramento e testes completos. Em `DEMO_MODE=true`, os dados fornecidos ao endpoint público são substituídos antes de persistir, e o Checkout Pro fica bloqueado.
