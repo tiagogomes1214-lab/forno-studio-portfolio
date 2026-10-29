@@ -40,6 +40,10 @@ class OrderItemOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class OrderStatusUpdate(BaseModel):
+    status: str = Field(pattern="^(Aguardando pagamento|Recebido|Em preparo|Saiu para entrega|Pronto para retirada|Concluído|Cancelado)$")
+
+
 class OrderOut(BaseModel):
     id: int
     customer_name: str
