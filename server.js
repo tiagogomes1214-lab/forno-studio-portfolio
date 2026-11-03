@@ -2,12 +2,12 @@
 
 /**
  * Entrada Node.js do Forno Studio na Discloud.
- * O Next.js é instalado em frontend/node_modules durante o BUILD.
- * Não use 'next start' com um segundo processo: servimos o Next diretamente.
+ * O runtime da Discloud instala dependências a partir do package.json da raiz.
+ * O Next.js deve ser resolvido de node_modules da raiz, não de frontend/node_modules.
  */
 const http = require("http");
 const path = require("path");
-const next = require("./frontend/node_modules/next");
+const next = require("next");
 
 const hostname = "0.0.0.0";
 const port = 8080;
