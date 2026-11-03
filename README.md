@@ -152,13 +152,13 @@ O repositório já contém os arquivos para deploy da **página Next.js** pela i
 **Etapas na sua conta Discloud (Platinum ou superior):**
 
 1. Ative o plano Platinum e reserve um subdomínio em https://discloud.com/dashboard (exemplo: `minha-pizzaria.discloud.app`; não suponha que um nome está disponível sem consultar).
-2. Atualize **`ID=SUBDOMINIO_RESERVADO`** em `/discloud.config` para o subdomínio reservado **sem** `.discloud.app`. Não altere mais nenhum campo sem necessidade.
+2. O subdomínio **`fornostudio-tiago.discloud.app`** já foi reservado e o `/discloud.config` usa **`ID=fornostudio-tiago`**.
 3. Em **Configurações → Integração GitHub**, vincule a conta que é proprietária do repositório `tiagogomes1214-lab/forno-studio-portfolio`. Autorize o acesso **somente** a esse repositório, se preferir.
 4. Na Discloud, selecione **Aplicações → + Upload → GitHub**, o repositório `forno-studio-portfolio` e a branch `main`.
 5. No formulário de variáveis de ambiente, configure os valores **antes** do build:
    - `NEXT_PUBLIC_API_URL=https://forno-studio-api.onrender.com`
    - `NEXT_PUBLIC_DEMO_MODE=true`
-   - `NEXT_PUBLIC_SITE_URL=https://SEU-SUBDOMINIO.discloud.app` (substitua pelo endereço reservado)
+   - `NEXT_PUBLIC_SITE_URL=https://fornostudio-tiago.discloud.app` (substitua pelo endereço reservado)
 6. Confirme e verifique no log a instalação do `frontend`, o `next build` e o `next start`. Se faltar alguma variável, o build falha deliberadamente para não publicar um site quebrado.
 7. Em **Render**, ajuste `CORS_ORIGINS` adicionando a URL exata da Discloud, com vírgula entre origens se mantiver a Vercel. Altere também `FRONTEND_PUBLIC_URL` para o domínio da Discloud para que os links de acompanhamento dos pedidos abram no site correto. Reinicie/redeploy a API.
 8. Teste homepage, `/pedir`, catálogo, carrinho, criação do pedido demo, `/acompanhar/<token>`, acesso admin e alteração de status. Não desligue a Vercel antes de validar tudo.
@@ -186,11 +186,11 @@ Descrições de ingredientes: ao iniciar, o backend atualiza somente descriçõe
 **A Discloud exige Platinum ou superior para sites e APIs**, subdomínio reservado e servidor na porta **8080**. Referência: https://docs.discloud.com/how-to-host/frameworks/nextjs
 
 1. Reserve um subdomínio no painel da Discloud e verifique se sua conta tem plano compatível.
-2. Em `frontend/discloud.config`, substitua `ID=SUBDOMINIO_RESERVADO` **somente** pelo identificador reservado, sem `.discloud.app`.
+2. O arquivo `frontend/discloud.config` já usa `ID=fornostudio-tiago`, correspondente ao subdomínio reservado.
 3. Configure **antes do build**, no ambiente da Discloud:
    - `NEXT_PUBLIC_API_URL=https://forno-studio-api.onrender.com`
    - `NEXT_PUBLIC_DEMO_MODE=true`
-   - `NEXT_PUBLIC_SITE_URL=https://SEU-SUBDOMINIO.discloud.app`
+   - `NEXT_PUBLIC_SITE_URL=https://fornostudio-tiago.discloud.app`
 4. Na máquina, dentro da pasta `frontend`, execute `npm install` e `npm run build`. O script `npm run start` atende à porta 8080; para testes locais com porta 3000 use `npm run dev`.
 5. Prepare um ZIP **com o conteúdo interno de `frontend` na raiz do ZIP**, incluindo `discloud.config`, `package.json`, `src`, `public` e arquivos de configuração. Exclua `.env*` privados, `.next`, `node_modules` e `.git`. Faça upload pelo painel da Discloud conforme https://docs.discloud.com/how-to-host-using/dashboard.
 6. Depois do deploy e da URL HTTPS final, no serviço Render (API), troque `CORS_ORIGINS` para a URL exata da Discloud e `FRONTEND_PUBLIC_URL` para essa mesma URL. Durante a transição, `CORS_ORIGINS` pode conter ambas as origens separadas por vírgula.
