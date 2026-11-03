@@ -200,3 +200,5 @@ Descrições de ingredientes: ao iniciar, o backend atualiza somente descriçõe
 Esta alteração **prepara** a aplicação para Discloud. Ela **não publica automaticamente** no painel da Discloud; são necessários acesso à conta, plano, subdomínio, variáveis e deploy. O backend **permanece** no Render e o banco no Neon. Para migrar também a API, será necessário um segundo serviço `TYPE=site` com configuração de Python e revisão completa de CORS/webhooks.
 
 **Não use dados de clientes nem pagamentos reais durante a demonstração.** O catálogo e o tempo de preparo são ilustrativos.
+
+<!-- Diagnóstico CI temporário: testar dist/ standalone isolado. -->
