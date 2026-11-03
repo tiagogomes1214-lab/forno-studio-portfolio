@@ -8,5 +8,10 @@
     "start": "node server.js",
     "dev": "npm --prefix frontend run dev",
     "check": "node scripts/discloud-build.cjs"
-  }
+  },
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {}
 }
