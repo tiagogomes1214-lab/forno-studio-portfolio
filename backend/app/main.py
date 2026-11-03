@@ -23,12 +23,12 @@ from .models import Order, OrderItem, Product
 from .schemas import CheckoutOut, OrderIn, OrderOut, OrderStatusUpdate, ProductIn, ProductOut, TrackingOut
 
 SEED_PRODUCTS = [
-    {"name":"Margherita Classica","description":"Molho da casa, fior di latte, manjericão fresco e azeite.","category":"Clássicas","price":39.90,"image":"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85","badge":"Favorita"},
-    {"name":"Diavola","description":"Salame picante, mozzarella, molho artesanal e mel apimentado.","category":"Especiais","price":48.90,"image":"https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=900&q=85","badge":"Picante"},
-    {"name":"Quattro Formaggi","description":"Mozzarella, gorgonzola, parmesão e provolone.","category":"Especiais","price":46.90,"image":"https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=900&q=85","badge":"Cremosa"},
-    {"name":"Pepperoni","description":"Pepperoni tostado, mozzarella e molho de tomate da casa.","category":"Clássicas","price":44.90,"image":"https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=900&q=85","badge":"Mais pedida"},
-    {"name":"Funghi & Trufa","description":"Cogumelos salteados, creme de queijo e toque de azeite trufado.","category":"Autorais","price":52.90,"image":"https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=900&q=85","badge":"Autoral"},
-    {"name":"Burrata e Pesto","description":"Burrata cremosa, pesto de manjericão e tomate confitado.","category":"Autorais","price":54.90,"image":"https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?auto=format&fit=crop&w=900&q=85","badge":"Especial"},
+    {"name":"Margherita Classica","description":"Massa de fermentação lenta, molho de tomate artesanal, muçarela fior di latte, folhas de manjericão fresco e azeite de oliva extravirgem.","category":"Clássicas","price":39.90,"image":"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85","badge":"Favorita"},
+    {"name":"Diavola","description":"Massa de fermentação lenta, molho de tomate artesanal, muçarela, salame picante tipo diavola e mel levemente apimentado.","category":"Especiais","price":48.90,"image":"https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=900&q=85","badge":"Picante"},
+    {"name":"Quattro Formaggi","description":"Massa de fermentação lenta, molho branco, muçarela, gorgonzola, parmesão e provolone.","category":"Especiais","price":46.90,"image":"https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=900&q=85","badge":"Cremosa"},
+    {"name":"Pepperoni","description":"Massa de fermentação lenta, molho de tomate artesanal, muçarela, rodelas de pepperoni e orégano.","category":"Clássicas","price":44.90,"image":"https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=900&q=85","badge":"Mais pedida"},
+    {"name":"Funghi & Trufa","description":"Massa de fermentação lenta, creme de queijo, cogumelos salteados, muçarela, parmesão e azeite trufado.","category":"Autorais","price":52.90,"image":"https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=900&q=85","badge":"Autoral"},
+    {"name":"Burrata e Pesto","description":"Massa de fermentação lenta, molho de tomate, muçarela, burrata, pesto de manjericão e tomates confitados.","category":"Autorais","price":54.90,"image":"https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?auto=format&fit=crop&w=900&q=85","badge":"Especial"},
     {"name":"Tiramisù da Casa","description":"Creme de mascarpone, café e cacau amargo.","category":"Sobremesas","price":18.90,"image":"https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=900&q=85","badge":"Feito aqui"},
     {"name":"Limonata Siciliana","description":"Limão siciliano, água com gás e toque de hortelã.","category":"Bebidas","price":12.90,"image":"https://images.unsplash.com/photo-1513558161293-cbef765edc0b?auto=format&fit=crop&w=900&q=85","badge":"Refrescante"},
 ]
@@ -61,6 +61,23 @@ def migrate_existing_database() -> None:
         connection.execute(text("CREATE INDEX IF NOT EXISTS ix_orders_payment_provider_order_id ON orders (payment_provider_order_id)"))
 
 
+def refresh_legacy_product_descriptions(db: Session) -> None:
+    """Atualiza apenas textos originais do catálogo, sem sobrescrever edições do administrador."""
+    replacements = [
+        ("Molho da casa, fior di latte, manjericão fresco e azeite.", "Massa de fermentação lenta, molho de tomate artesanal, muçarela fior di latte, folhas de manjericão fresco e azeite de oliva extravirgem."),
+        ("Salame picante, mozzarella, molho artesanal e mel apimentado.", "Massa de fermentação lenta, molho de tomate artesanal, muçarela, salame picante tipo diavola e mel levemente apimentado."),
+        ("Mozzarella, gorgonzola, parmesão e provolone.", "Massa de fermentação lenta, molho branco, muçarela, gorgonzola, parmesão e provolone."),
+        ("Pepperoni tostado, mozzarella e molho de tomate da casa.", "Massa de fermentação lenta, molho de tomate artesanal, muçarela, rodelas de pepperoni e orégano."),
+        ("Cogumelos salteados, creme de queijo e toque de azeite trufado.", "Massa de fermentação lenta, creme de queijo, cogumelos salteados, muçarela, parmesão e azeite trufado."),
+        ("Burrata cremosa, pesto de manjericão e tomate confitado.", "Massa de fermentação lenta, molho de tomate, muçarela, burrata, pesto de manjericão e tomates confitados."),
+    ]
+    for old, new in replacements:
+        db.query(Product).filter(Product.description == old).update(
+            {Product.description: new}, synchronize_session=False
+        )
+    db.commit()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -69,6 +86,7 @@ async def lifespan(app: FastAPI):
         if db.query(Product).count() == 0:
             db.add_all([Product(**item) for item in SEED_PRODUCTS])
             db.commit()
+        refresh_legacy_product_descriptions(db)
     yield
 
 
