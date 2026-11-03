@@ -30,6 +30,8 @@ jobs:
           grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
           node --check server.js
           node --check scripts/discloud-build.cjs
+      - name: Instalar dependencias de runtime na raiz (como Docker Discloud)
+        run: npm install --omit=dev --no-audit --no-fund
       - name: Build sem variaveis (simula o builder Docker da Discloud)
         run: |
           unset NEXT_PUBLIC_API_URL NEXT_PUBLIC_DEMO_MODE NEXT_PUBLIC_SITE_URL
@@ -40,6 +42,11 @@ jobs:
           NEXT_PUBLIC_DEMO_MODE: "true"
           NEXT_PUBLIC_SITE_URL: https://fornostudio-tiago.discloud.app
         run: |
+          # O runtime da Discloud pode não preservar frontend/node_modules.
+          # Simula exatamente o erro MODULE_NOT_FOUND fornecido no log.
+          mv frontend/node_modules "$RUNNER_TEMP/forno-frontend-node_modules"
+          test -d node_modules/next
+          test ! -d frontend/node_modules
           node server.js > /tmp/forno-next.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
