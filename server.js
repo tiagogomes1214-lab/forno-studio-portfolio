@@ -1,32 +1,33 @@
 "use strict";
 
-// Ponto de entrada real da aplicação para a Discloud.
-// O Next.js já foi compilado pelo comando BUILD e atende na porta 8080.
-const { spawn } = require("node:child_process");
-const path = require("node:path");
+/**
+ * Entrada Node.js do Forno Studio na Discloud.
+ * O Next.js é instalado em frontend/node_modules durante o BUILD.
+ * Não use 'next start' com um segundo processo: servimos o Next diretamente.
+ */
+const http = require("http");
+const path = require("path");
+const next = require("./frontend/node_modules/next");
 
-const frontend = path.join(__dirname, "frontend");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const server = spawn(npmCommand, ["run", "start"], {
-  cwd: frontend,
-  stdio: "inherit",
-  env: process.env,
-  shell: process.platform === "win32",
+const hostname = "0.0.0.0";
+const port = 8080;
+const app = next({
+  dev: false,
+  dir: path.join(__dirname, "frontend"),
+  hostname,
+  port,
 });
 
-server.on("error", (error) => {
-  console.error("[Forno Studio] Não foi possível iniciar o servidor Next.js:", error.message);
-  process.exitCode = 1;
-});
-server.on("exit", (code, signal) => {
-  if (signal) {
-    process.exitCode = 1;
-  } else {
-    process.exitCode = code ?? 1;
-  }
-});
-for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => {
-    if (!server.killed) server.kill(signal);
+const handle = app.getRequestHandler();
+
+app.prepare()
+  .then(() => {
+    const server = http.createServer((request, response) => handle(request, response));
+    server.listen(port, hostname, () => {
+      console.log("[Forno Studio] Next.js disponível na porta " + port);
+    });
+  })
+  .catch((error) => {
+    console.error("[Forno Studio] Erro ao iniciar Next.js:", error);
+    process.exit(1);
   });
-}
