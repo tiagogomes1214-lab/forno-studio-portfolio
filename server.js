@@ -1,33 +1,23 @@
 "use strict";
 
-/**
- * Entrada Node.js do Forno Studio na Discloud.
- * O runtime da Discloud instala dependências a partir do package.json da raiz.
- * O Next.js deve ser resolvido de node_modules da raiz, não de frontend/node_modules.
- */
-const http = require("http");
-const path = require("path");
-const next = require("next");
+// A Discloud preserva o pacote de BUILD em dist/.
+// Este arquivo fica na raiz para que MAIN=server.js seja validado no upload.
+const fs = require("node:fs");
+const path = require("node:path");
 
-const hostname = "0.0.0.0";
-const port = 8080;
-const app = next({
-  dev: false,
-  dir: path.join(__dirname, "frontend"),
-  hostname,
-  port,
-});
+process.env.NODE_ENV = "production";
+process.env.PORT = "8080";
+process.env.HOSTNAME = "0.0.0.0";
 
-const handle = app.getRequestHandler();
+const releaseDir = path.join(__dirname, "dist");
+const entry = path.join(releaseDir, "server.js");
+const buildId = path.join(releaseDir, ".next", "BUILD_ID");
 
-app.prepare()
-  .then(() => {
-    const server = http.createServer((request, response) => handle(request, response));
-    server.listen(port, hostname, () => {
-      console.log("[Forno Studio] Next.js disponível na porta " + port);
-    });
-  })
-  .catch((error) => {
-    console.error("[Forno Studio] Erro ao iniciar Next.js:", error);
-    process.exit(1);
-  });
+if (!fs.existsSync(entry) || !fs.existsSync(buildId)) {
+  console.error("[Forno Studio] Build de produção ausente em dist/.");
+  console.error("[Forno Studio] Execute um novo BUILD (npm run build), e não apenas Reiniciar.");
+  process.exit(1);
+}
+
+// Servidor mínimo do Next.js gerado no build standalone.
+require(entry);
