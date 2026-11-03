@@ -19,7 +19,30 @@ jobs:
           test -f discloud.config
           test -f package.json
           test -f frontend/package-lock.json
-          grep -q '^TYPE=site$' discloud.config
+          grep -q '^TYPE=site
+          grep -q '^MAIN=package.json$' discloud.config
+          grep -q '^BUILD=npm run build$' discloud.config
+          grep -q '^START=npm run start$' discloud.config
+          grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
+      - name: Build completo
+        env:
+          NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
+          NEXT_PUBLIC_DEMO_MODE: 'true'
+          NEXT_PUBLIC_SITE_URL: https://fornostudio-tiago.discloud.app
+        run: npm run build
+ discloud.config
+          grep -q '^ID=fornostudio-tiago
+          grep -q '^MAIN=package.json$' discloud.config
+          grep -q '^BUILD=npm run build$' discloud.config
+          grep -q '^START=npm run start$' discloud.config
+          grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
+      - name: Build completo
+        env:
+          NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
+          NEXT_PUBLIC_DEMO_MODE: 'true'
+          NEXT_PUBLIC_SITE_URL: https://forno-studio-portfolio-seven.vercel.app
+        run: npm run build
+ discloud.config
           grep -q '^MAIN=package.json$' discloud.config
           grep -q '^BUILD=npm run build$' discloud.config
           grep -q '^START=npm run start$' discloud.config
