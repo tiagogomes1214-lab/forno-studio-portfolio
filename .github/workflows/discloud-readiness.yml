@@ -1,9 +1,12 @@
 name: Validar pacote Discloud
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
 jobs:
   discloud:
     runs-on: ubuntu-latest
@@ -11,45 +14,25 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Validar config e scripts
+      - name: Validar discloud.config e ponto de entrada
         run: |
           test -f discloud.config
-          test -f package.json
+          test -f server.js
           test -f frontend/package-lock.json
-          grep -q '^TYPE=site
-          grep -q '^MAIN=package.json$' discloud.config
-          grep -q '^BUILD=npm run build$' discloud.config
-          grep -q '^START=npm run start$' discloud.config
+          grep -Fxq 'TYPE=site' discloud.config
+          grep -Fxq 'MAIN=server.js' discloud.config
+          grep -Fxq 'BUILD=npm run build' discloud.config
+          grep -Fxq 'START=npm run start' discloud.config
+          grep -Fxq 'ID=fornostudio-tiago' discloud.config
           grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
-      - name: Build completo
+          node --check server.js
+          node --check scripts/discloud-build.cjs
+      - name: Build do frontend
         env:
           NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
-          NEXT_PUBLIC_DEMO_MODE: 'true'
+          NEXT_PUBLIC_DEMO_MODE: "true"
           NEXT_PUBLIC_SITE_URL: https://fornostudio-tiago.discloud.app
-        run: npm run build
- discloud.config
-          grep -q '^ID=fornostudio-tiago
-          grep -q '^MAIN=package.json$' discloud.config
-          grep -q '^BUILD=npm run build$' discloud.config
-          grep -q '^START=npm run start$' discloud.config
-          grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
-      - name: Build completo
-        env:
-          NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
-          NEXT_PUBLIC_DEMO_MODE: 'true'
-          NEXT_PUBLIC_SITE_URL: https://forno-studio-portfolio-seven.vercel.app
-        run: npm run build
- discloud.config
-          grep -q '^MAIN=package.json$' discloud.config
-          grep -q '^BUILD=npm run build$' discloud.config
-          grep -q '^START=npm run start$' discloud.config
-          grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
-      - name: Build completo
-        env:
-          NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
-          NEXT_PUBLIC_DEMO_MODE: 'true'
-          NEXT_PUBLIC_SITE_URL: https://forno-studio-portfolio-seven.vercel.app
         run: npm run build
