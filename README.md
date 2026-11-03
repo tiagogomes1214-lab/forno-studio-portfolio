@@ -138,3 +138,32 @@ A integração existente pode ser configurada para testes em um ambiente control
 - Vercel Hobby: https://vercel.com/docs/plans/hobby
 - Render — deploy gratuito e limitações: https://render.com/docs/free
 - Neon Free: https://neon.com/docs/introduction/pro-plan
+
+
+## Nova estrutura do site (novembro de 2026)
+
+- `/`: apresentação institucional responsiva com animações de entrada, movimento suave da imagem e links de navegação.
+- `/pedir`: catálogo por categorias, ingredientes descritos, carrinho, resumo antes do envio, opção de pagamento na entrega ou retirada e checkout online **apenas quando configurado e fora do modo demo**.
+- `/acompanhar/[token]`: status de pedido e estimativa ilustrativa de preparo de **40–60 minutos** somente quando o pagamento estiver aprovado ou marcado para pagamento na entrega/retirada. Essa previsão não é uma promessa de entrega, nem inclui deslocamento.
+- `/admin`: administração de pedidos e produtos existente.
+
+Descrições de ingredientes: ao iniciar, o backend atualiza somente descrições exatamente iguais aos textos padrão antigos, preservando descrições modificadas pelo administrador. Confira os ingredientes reais antes de usar o cardápio comercialmente.
+
+### Preparar a migração do frontend para a Discloud
+
+**A Discloud exige Platinum ou superior para sites e APIs**, subdomínio reservado e servidor na porta **8080**. Referência: https://docs.discloud.com/how-to-host/frameworks/nextjs
+
+1. Reserve um subdomínio no painel da Discloud e verifique se sua conta tem plano compatível.
+2. Em `frontend/discloud.config`, substitua `ID=SUBDOMINIO_RESERVADO` **somente** pelo identificador reservado, sem `.discloud.app`.
+3. Configure **antes do build**, no ambiente da Discloud:
+   - `NEXT_PUBLIC_API_URL=https://forno-studio-api.onrender.com`
+   - `NEXT_PUBLIC_DEMO_MODE=true`
+   - `NEXT_PUBLIC_SITE_URL=https://SEU-SUBDOMINIO.discloud.app`
+4. Na máquina, dentro da pasta `frontend`, execute `npm install` e `npm run build`. O script `npm run start` atende à porta 8080; para testes locais com porta 3000 use `npm run dev`.
+5. Prepare um ZIP **com o conteúdo interno de `frontend` na raiz do ZIP**, incluindo `discloud.config`, `package.json`, `src`, `public` e arquivos de configuração. Exclua `.env*` privados, `.next`, `node_modules` e `.git`. Faça upload pelo painel da Discloud conforme https://docs.discloud.com/how-to-host-using/dashboard.
+6. Depois do deploy e da URL HTTPS final, no serviço Render (API), troque `CORS_ORIGINS` para a URL exata da Discloud e `FRONTEND_PUBLIC_URL` para essa mesma URL. Durante a transição, `CORS_ORIGINS` pode conter ambas as origens separadas por vírgula.
+7. Verifique `/`, `/pedir`, `/api/products` pelo backend, criação de pedido demonstrativo, link de acompanhamento, e login administrativo. **Só após validar** considere remover a hospedagem antiga na Vercel.
+
+Esta alteração **prepara** a aplicação para Discloud. Ela **não publica automaticamente** no painel da Discloud; são necessários acesso à conta, plano, subdomínio, variáveis e deploy. O backend **permanece** no Render e o banco no Neon. Para migrar também a API, será necessário um segundo serviço `TYPE=site` com configuração de Python e revisão completa de CORS/webhooks.
+
+**Não use dados de clientes nem pagamentos reais durante a demonstração.** O catálogo e o tempo de preparo são ilustrativos.
