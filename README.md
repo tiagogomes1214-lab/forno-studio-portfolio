@@ -143,8 +143,9 @@ A integração existente pode ser configurada para testes em um ambiente control
 ## Publicar direto do GitHub na Discloud (recomendado)
 
 O repositório já contém os arquivos para deploy da **página Next.js** pela integração GitHub:
-- `/discloud.config` — configuração **na raiz**, necessária para integração com GitHub.
+- `/discloud.config` — configuração **na raiz**, necessária para integração com GitHub; `MAIN=server.js` e `ID=fornostudio-tiago`.
 - `/package.json` e `/scripts/discloud-build.cjs` — instalam e compilam o frontend que está na pasta `frontend/`.
+- `/server.js` — ponto de entrada Node real para o validador da Discloud.
 - `frontend/package.json` — o comando `npm run start` inicia Next.js em `0.0.0.0:8080`.
 - `.discloudignore` — elimina artefatos locais e segredos do pacote.
 - `.github/workflows/discloud-readiness.yml` — valida a configuração e executa build em commits.
@@ -159,7 +160,7 @@ O repositório já contém os arquivos para deploy da **página Next.js** pela i
    - `NEXT_PUBLIC_API_URL=https://forno-studio-api.onrender.com`
    - `NEXT_PUBLIC_DEMO_MODE=true`
    - `NEXT_PUBLIC_SITE_URL=https://fornostudio-tiago.discloud.app` (substitua pelo endereço reservado)
-6. Confirme e verifique no log a instalação do `frontend`, o `next build` e o `next start`. Se faltar alguma variável, o build falha deliberadamente para não publicar um site quebrado.
+6. Confirme e verifique no log a instalação do `frontend`, o `next build` e o `next start`. Se faltar alguma variável, o build falha deliberadamente para não publicar um site quebrado. **Se receber o erro de configuração na Discloud, volte para a primeira tela, atualize o repositório/branch e execute novamente com o último commit**, pois a etapa anterior pode ter carregado a versão antiga que usava `MAIN=package.json`.
 7. Em **Render**, ajuste `CORS_ORIGINS` adicionando a URL exata da Discloud, com vírgula entre origens se mantiver a Vercel. Altere também `FRONTEND_PUBLIC_URL` para o domínio da Discloud para que os links de acompanhamento dos pedidos abram no site correto. Reinicie/redeploy a API.
 8. Teste homepage, `/pedir`, catálogo, carrinho, criação do pedido demo, `/acompanhar/<token>`, acesso admin e alteração de status. Não desligue a Vercel antes de validar tudo.
 
