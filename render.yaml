@@ -16,6 +16,8 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: ADMIN_SESSION_SECRET
+        sync: false
       - key: DEMO_MODE
         value: "true"
       - key: CORS_ORIGINS

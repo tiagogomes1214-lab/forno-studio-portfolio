@@ -79,3 +79,14 @@ class TrackingOut(BaseModel):
     tracking_token: str
     items: list[OrderItemOut]
     model_config = ConfigDict(from_attributes=True)
+
+
+class AdminCredentials(BaseModel):
+    username: str = Field(min_length=1, max_length=120)
+    password: str = Field(min_length=1, max_length=200)
+
+
+class AdminSessionOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
