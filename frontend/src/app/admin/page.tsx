@@ -41,6 +41,7 @@ function formatError(error: unknown, fallback: string) {
 
 export default function Admin() {
   const [logged, setLogged] = useState(false);
+  const [token, setToken] = useState("");
   const [editing, setEditing] = useState<number | null>(null);
   const [u, setU] = useState("");
   const [p, setP] = useState("");
@@ -53,19 +54,18 @@ export default function Admin() {
   const [loginBusy, setLoginBusy] = useState(false);
   const [form, setForm] = useState<ProductForm>(emptyForm);
 
-  // Credentials are entered by the administrator and sent only to the backend.
-  // They are not embedded in NEXT_PUBLIC_* variables or the public JavaScript bundle.
-  const authHeaders = (username = u, password = p): HeadersInit => ({
+  // The backend authenticates the password once. Only the short-lived token
+  // stays in React memory; it is neither persisted nor exposed in NEXT_PUBLIC_*.
+  const authHeaders = (accessToken = token): HeadersInit => ({
     "Content-Type": "application/json",
-    "X-Admin-User": username,
-    "X-Admin-Password": password,
+    "Authorization": `Bearer ${accessToken}`,
   });
 
-  async function load(username = u, password = p) {
+  async function load(accessToken = token) {
     setLoading(true);
     setError("");
     try {
-      const headers = authHeaders(username, password);
+      const headers = authHeaders(accessToken);
       const [orderData, productData] = await Promise.all([
         apiRequest<Order[]>("/api/admin/orders", { headers }),
         apiRequest<Product[]>("/api/admin/products", { headers }),
@@ -84,8 +84,15 @@ export default function Admin() {
     setLoginBusy(true);
     setError("");
     try {
-      // The server, not the browser, decides whether the credentials are valid.
-      await apiRequest<Order[]>("/api/admin/orders", { headers: authHeaders(u, p) });
+      // The server validates credentials and issues a session valid for 30 minutes.
+      const session = await apiRequest<{ access_token: string; expires_in: number }>("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: u, password: p }),
+      });
+      setToken(session.access_token);
+      setU("");
+      setP("");
       setLogged(true);
     } catch (err) {
       setError(formatError(err, "Não foi possível entrar. Confira as credenciais e a configuração do backend."));
@@ -95,10 +102,10 @@ export default function Admin() {
   }
 
   useEffect(() => {
-    if (logged) void load();
+    if (logged && token) void load(token);
     // load is intentionally called when the login state changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logged]);
+  }, [logged, token]);
 
   async function changeStatus(id: number, newStatus: string) {
     setNotice("");
@@ -136,6 +143,7 @@ export default function Admin() {
 
   function logout() {
     setLogged(false);
+    setToken("");
     setU("");
     setP("");
     setOrders([]);
@@ -165,7 +173,7 @@ export default function Admin() {
           <button className="button button-dark full" disabled={loginBusy}>
             {loginBusy ? "Verificando…" : "Entrar no painel"}
           </button>
-          <small>As credenciais são validadas pelo backend e não ficam embutidas no site público.</small>
+          <small>Senha validada pelo servidor. A sessão dura 30 minutos e não fica salva no dispositivo.</small>
         </form>
       </main>
     );
