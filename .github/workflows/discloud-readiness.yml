@@ -30,12 +30,10 @@ jobs:
           grep -q 'next start -H 0.0.0.0 -p 8080' frontend/package.json
           node --check server.js
           node --check scripts/discloud-build.cjs
-      - name: Build do frontend
-        env:
-          NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
-          NEXT_PUBLIC_DEMO_MODE: "true"
-          NEXT_PUBLIC_SITE_URL: https://fornostudio-tiago.discloud.app
-        run: npm run build
+      - name: Build sem variaveis (simula o builder Docker da Discloud)
+        run: |
+          unset NEXT_PUBLIC_API_URL NEXT_PUBLIC_DEMO_MODE NEXT_PUBLIC_SITE_URL
+          npm run build
       - name: Testar servidor Next.js na porta 8080
         env:
           NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
