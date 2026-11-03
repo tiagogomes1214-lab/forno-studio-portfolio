@@ -1,0 +1,12 @@
+{
+  "name": "forno-studio-discloud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deploy Discloud do frontend Next.js no monorepo Forno Studio",
+  "scripts": {
+    "build": "npm --prefix frontend ci && npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "dev": "npm --prefix frontend run dev",
+    "check": "npm --prefix frontend ci && npm --prefix frontend run build"
+  }
+}
