@@ -4,6 +4,14 @@
 backend/.env
 frontend/.env.local
 
+# Bloquear variaveis de ambiente em qualquer pacote do monorepo
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+node_modules/
+.next/
+
 # Python
 .venv/
 __pycache__/
