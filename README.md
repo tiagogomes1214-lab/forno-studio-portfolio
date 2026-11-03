@@ -145,7 +145,7 @@ A integração existente pode ser configurada para testes em um ambiente control
 O repositório já contém os arquivos para deploy da **página Next.js** pela integração GitHub:
 - `/discloud.config` — configuração **na raiz**, necessária para integração com GitHub; `MAIN=server.js` e `ID=fornostudio-tiago`.
 - `/package.json` e `/scripts/discloud-build.cjs` — instalam e compilam o frontend que está na pasta `frontend/`.
-- `/server.js` — ponto de entrada Node real para o validador da Discloud.
+- `/server.js` — ponto de entrada Node que inicia o pacote de produção autossuficiente em `dist/server.js`.
 - `frontend/package.json` — o comando `npm run start` inicia Next.js em `0.0.0.0:8080`.
 - `.discloudignore` — elimina artefatos locais e segredos do pacote.
 - `.github/workflows/discloud-readiness.yml` — valida a configuração e executa build em commits.
@@ -163,6 +163,18 @@ O repositório já contém os arquivos para deploy da **página Next.js** pela i
 6. Confirme e verifique no log a instalação do `frontend`, o `next build` e o `next start`. Se faltar alguma variável, o build falha deliberadamente para não publicar um site quebrado. **Se receber o erro de configuração na Discloud, volte para a primeira tela, atualize o repositório/branch e execute novamente com o último commit**, pois a etapa anterior pode ter carregado a versão antiga que usava `MAIN=package.json`.
 7. Em **Render**, ajuste `CORS_ORIGINS` adicionando a URL exata da Discloud, com vírgula entre origens se mantiver a Vercel. Altere também `FRONTEND_PUBLIC_URL` para o domínio da Discloud para que os links de acompanhamento dos pedidos abram no site correto. Reinicie/redeploy a API.
 8. Teste homepage, `/pedir`, catálogo, carrinho, criação do pedido demo, `/acompanhar/<token>`, acesso admin e alteração de status. Não desligue a Vercel antes de validar tudo.
+
+### Correção de inicialização no ambiente da Discloud (novembro de 2026)
+
+A Discloud executa o build em um ambiente e pode não manter `frontend/.next` e `frontend/node_modules` durante a execução. Por isso, o fluxo de produção usa **Next.js standalone**:
+
+- O build ativa `DISCLOUD_BUNDLE=true` somente na Discloud, preservando o funcionamento da Vercel.
+- `frontend/next.config.ts` fixa `outputFileTracingRoot` na pasta `frontend` e cria `.next/standalone`.
+- `scripts/discloud-build.cjs` copia o servidor, `.next/BUILD_ID`, dependências rastreadas e arquivos estáticos para `dist/`.
+- O `server.js` da raiz inicia `dist/server.js` na porta 8080. Não precisa instalar TypeScript em runtime.
+- O GitHub Actions remove temporariamente os diretórios `frontend/node_modules`, `frontend/.next` e `node_modules` da raiz antes do teste de execução; valida `/` e `/pedir` na porta 8080.
+
+**Ao publicar esta correção, use Redeploy/Rebuild pela branch `main`, e não apenas Reiniciar**, pois o pacote `dist/` só é gerado pelo comando `BUILD=npm run build`. Verifique nos logs do build a linha `[Discloud] Pacote standalone gerado em dist/ com .next e arquivos estáticos.`.
 
 Quando o projeto estiver funcionando, você pode habilitar **Auto Deploy** na integração GitHub, para atualizar a aplicação em novos commits. Alguns controles dependem do painel da Discloud.
 
