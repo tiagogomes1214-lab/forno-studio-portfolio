@@ -36,17 +36,23 @@ jobs:
         run: |
           unset NEXT_PUBLIC_API_URL NEXT_PUBLIC_DEMO_MODE NEXT_PUBLIC_SITE_URL
           npm run build
-      - name: Testar servidor Next.js na porta 8080
+      - name: Testar bundle standalone isolado em dist na porta 8080
         env:
           NEXT_PUBLIC_API_URL: https://forno-studio-api.onrender.com
           NEXT_PUBLIC_DEMO_MODE: "true"
           NEXT_PUBLIC_SITE_URL: https://fornostudio-tiago.discloud.app
         run: |
-          # O runtime da Discloud pode não preservar frontend/node_modules.
-          # Simula exatamente o erro MODULE_NOT_FOUND fornecido no log.
+          # Discloud preserva dist/, mas pode descartar as pastas de build
+          # e as dependencias usadas durante a compilacao.
+          test -f dist/server.js
+          test -f dist/.next/BUILD_ID
+          test -d dist/node_modules/next
           mv frontend/node_modules "$RUNNER_TEMP/forno-frontend-node_modules"
-          test -d node_modules/next
+          mv frontend/.next "$RUNNER_TEMP/forno-frontend-next"
+          mv node_modules "$RUNNER_TEMP/forno-root-node_modules"
           test ! -d frontend/node_modules
+          test ! -d frontend/.next
+          test ! -d node_modules
           node server.js > /tmp/forno-next.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
