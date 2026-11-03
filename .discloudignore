@@ -1,12 +1,16 @@
+# Arquivos de origem que a Discloud nao precisa receber no upload.
+# Nao excluir dist/.next: BUILD gera o bundle independente em dist/.
 .git/
 .github/
 backend/
-**/node_modules/
-**/.next/
-**/.env
-**/.env.local
-**/.env.production
-**/.env.*.local
-**/*.log
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+.env
+.env.*
+frontend/.env
+frontend/.env.*
+*.log
 **/__pycache__/
 **/.venv/
