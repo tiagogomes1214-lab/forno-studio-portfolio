@@ -2,6 +2,8 @@
 
 Projeto educacional para portfólio: site premium em Next.js, cardápio, carrinho, checkout demonstrativo, registro e acompanhamento de pedidos, painel administrativo e integração opcional com Mercado Pago.
 
+**Aprenda o projeto arquivo por arquivo:** [Guia de estudos](docs/GUIA_DE_ESTUDOS.md), com arquitetura, explicação dos módulos, testes e trilha de seis semanas.
+
 > **Uso recomendado na internet: portfólio/demonstração.** Não ative pagamentos reais nem use dados reais de clientes nesta versão. Em `DEMO_MODE=true`, a API anonimiza os dados enviados nos pedidos, desativa o Mercado Pago e permite demonstrar o fluxo sem armazenar nome, telefone ou endereço reais.
 
 ## Tecnologias
@@ -46,7 +48,7 @@ npm.cmd run dev
 
 Site: http://localhost:3000 — painel: http://localhost:3000/admin
 
-O painel valida as credenciais no backend. Em ambiente local, o arquivo `backend/.env` começa com as credenciais de estudo `admin` / `troque-esta-senha`; substitua-as se o projeto ficar acessível a outras pessoas. Não existe mais senha administrativa em `NEXT_PUBLIC_*`.
+O painel faz login por `POST /api/admin/session` e recebe um token JWT que expira em 30 minutos. Em ambiente local, o arquivo `backend/.env` começa com credenciais de estudo `admin` / `troque-esta-senha`; personalize-as e **configure `ADMIN_SESSION_SECRET` com um valor aleatório exclusivo de pelo menos 32 caracteres**, gerado, por exemplo, com `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Não publique esses valores nem os coloque em `NEXT_PUBLIC_*`.
 
 ## Publicar como portfólio (sem custo inicial, com limites dos planos gratuitos)
 
@@ -73,6 +75,7 @@ Adicione as variáveis de ambiente no painel do Render:
 - `DATABASE_URL` = connection string do Neon
 - `ADMIN_USERNAME` = usuário administrativo exclusivo
 - `ADMIN_PASSWORD` = senha longa, exclusiva e aleatória
+- `ADMIN_SESSION_SECRET` = segredo aleatório, exclusivo, com no mínimo 32 caracteres
 - `DEMO_MODE` = `true`
 - `CORS_ORIGINS` = URL final do frontend (você obterá na etapa D)
 - `FRONTEND_PUBLIC_URL` = URL final do frontend
@@ -96,7 +99,7 @@ Após o deploy, abra `https://SEU-SERVICO.onrender.com/api/health`. Deve retorna
 - `https://SUA-API.onrender.com/api/products` deve listar os produtos.
 - O site da Vercel deve carregar o cardápio e permitir testar um pedido demonstrativo.
 - A API em `DEMO_MODE=true` substitui nome, telefone, endereço e observações por dados fictícios antes de gravar o pedido; não deixe o cliente inserir informação real. Pagamentos online ficam desativados.
-- O acesso administrativo funciona somente com `ADMIN_USERNAME` e `ADMIN_PASSWORD` definidos no backend.
+- O acesso administrativo funciona somente com `ADMIN_USERNAME`, `ADMIN_PASSWORD` e `ADMIN_SESSION_SECRET` definidos no backend. O frontend atualizado também deve ser implantado.
 
 ## Diagnóstico rápido de publicação
 
@@ -119,7 +122,7 @@ A camada de chamadas da API agora normaliza barras finais e apresenta uma mensag
 ## Próximos passos antes de usar com clientes reais
 
 - Testar ponta a ponta: cardápio, carrinho, pedido demo, link de acompanhamento, login administrativo, alteração de status e edição de produtos.
-- Adicionar testes automatizados de API, limitação de tentativas de login, sessões seguras com expiração e logs sem dados pessoais.
+- Ampliar a cobertura automatizada e acrescentar logs sem dados pessoais. A versão de portfólio já contém testes de API, limitação local de tentativas de login e JWT com 30 minutos de expiração; para uso comercial, adotar rate limiting compartilhado, controles de sessão adicionais e revisão de segurança.
 - Validar acessibilidade, desempenho móvel, imagens e links de contato/endereço antes de apresentar como projeto comercial.
 - Só depois planejar pagamentos reais, webhooks em produção, backups e políticas de privacidade. O modo demo deve continuar ligado no portfólio.
 
@@ -127,7 +130,7 @@ A camada de chamadas da API agora normaliza barras finais e apresenta uma mensag
 
 Esta versão é para portfólio/estudo, não uma operação de restaurante real. Antes de receber pedidos verdadeiros, será necessário revisão de segurança, proteção contra abuso (rate limiting), política de privacidade e retenção de dados, backups, tratamento de cancelamentos, monitoramento e testes completos. Em `DEMO_MODE=true`, os dados fornecidos ao endpoint público são substituídos antes de persistir, e o Checkout Pro fica bloqueado.
 
-A autenticação do painel usa cabeçalhos enviados pelo navegador por HTTPS e não embute as credenciais no JavaScript público. Use uma senha longa e única. Essa versão ainda não inclui MFA, sessões de curta duração ou limite de tentativas de login; não a use para administrar uma loja real.
+A autenticação do painel usa sessão JWT de curta duração no cabeçalho `Authorization`; a senha só é enviada na operação de login, nunca embutida no JavaScript público. O frontend guarda o JWT apenas em memória. Há limite básico de tentativas de login por processo/IP, mas ainda não há MFA, revogação remota de tokens, nem limitador distribuído. Não use esta versão para administrar uma loja real sem revisão adicional.
 
 O plano gratuito do Render pode dormir após inatividade e perde arquivos locais em reinícios; por isso use Neon/PostgreSQL, não SQLite hospedado. O plano gratuito do Neon também escala a computação a zero e tem limites mensais. O Vercel Hobby destina-se a uso pessoal/não comercial. Consulte os planos atuais antes de uma utilização comercial.
 
