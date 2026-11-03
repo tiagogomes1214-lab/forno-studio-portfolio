@@ -140,6 +140,38 @@ A integração existente pode ser configurada para testes em um ambiente control
 - Neon Free: https://neon.com/docs/introduction/pro-plan
 
 
+## Publicar direto do GitHub na Discloud (recomendado)
+
+O repositório já contém os arquivos para deploy da **página Next.js** pela integração GitHub:
+- `/discloud.config` — configuração **na raiz**, necessária para integração com GitHub.
+- `/package.json` e `/scripts/discloud-build.cjs` — instalam e compilam o frontend que está na pasta `frontend/`.
+- `frontend/package.json` — o comando `npm run start` inicia Next.js em `0.0.0.0:8080`.
+- `.discloudignore` — elimina artefatos locais e segredos do pacote.
+- `.github/workflows/discloud-readiness.yml` — valida a configuração e executa build em commits.
+
+**Etapas na sua conta Discloud (Platinum ou superior):**
+
+1. Ative o plano Platinum e reserve um subdomínio em https://discloud.com/dashboard (exemplo: `minha-pizzaria.discloud.app`; não suponha que um nome está disponível sem consultar).
+2. Atualize **`ID=SUBDOMINIO_RESERVADO`** em `/discloud.config` para o subdomínio reservado **sem** `.discloud.app`. Não altere mais nenhum campo sem necessidade.
+3. Em **Configurações → Integração GitHub**, vincule a conta que é proprietária do repositório `tiagogomes1214-lab/forno-studio-portfolio`. Autorize o acesso **somente** a esse repositório, se preferir.
+4. Na Discloud, selecione **Aplicações → + Upload → GitHub**, o repositório `forno-studio-portfolio` e a branch `main`.
+5. No formulário de variáveis de ambiente, configure os valores **antes** do build:
+   - `NEXT_PUBLIC_API_URL=https://forno-studio-api.onrender.com`
+   - `NEXT_PUBLIC_DEMO_MODE=true`
+   - `NEXT_PUBLIC_SITE_URL=https://SEU-SUBDOMINIO.discloud.app` (substitua pelo endereço reservado)
+6. Confirme e verifique no log a instalação do `frontend`, o `next build` e o `next start`. Se faltar alguma variável, o build falha deliberadamente para não publicar um site quebrado.
+7. Em **Render**, ajuste `CORS_ORIGINS` adicionando a URL exata da Discloud, com vírgula entre origens se mantiver a Vercel. Altere também `FRONTEND_PUBLIC_URL` para o domínio da Discloud para que os links de acompanhamento dos pedidos abram no site correto. Reinicie/redeploy a API.
+8. Teste homepage, `/pedir`, catálogo, carrinho, criação do pedido demo, `/acompanhar/<token>`, acesso admin e alteração de status. Não desligue a Vercel antes de validar tudo.
+
+Quando o projeto estiver funcionando, você pode habilitar **Auto Deploy** na integração GitHub, para atualizar a aplicação em novos commits. Alguns controles dependem do painel da Discloud.
+
+**Atenção:** este deploy é só do **frontend**. Backend FastAPI continua hospedado no Render e PostgreSQL no Neon. Esse projeto está em `DEMO_MODE=true`, não use dados reais de clientes ou pagamentos reais. Nenhuma configuração confidencial deve ser publicada no GitHub.
+
+Documentação oficial:
+- https://docs.discloud.com/api-and-integrations/github-integration
+- https://docs.discloud.com/how-to-host/frameworks/nextjs
+- https://docs.discloud.com/how-to-host/websites-and-apis
+
 ## Nova estrutura do site (novembro de 2026)
 
 - `/`: apresentação institucional responsiva com animações de entrada, movimento suave da imagem e links de navegação.
@@ -149,7 +181,7 @@ A integração existente pode ser configurada para testes em um ambiente control
 
 Descrições de ingredientes: ao iniciar, o backend atualiza somente descrições exatamente iguais aos textos padrão antigos, preservando descrições modificadas pelo administrador. Confira os ingredientes reais antes de usar o cardápio comercialmente.
 
-### Preparar a migração do frontend para a Discloud
+### Alternativa: upload manual do frontend como ZIP
 
 **A Discloud exige Platinum ou superior para sites e APIs**, subdomínio reservado e servidor na porta **8080**. Referência: https://docs.discloud.com/how-to-host/frameworks/nextjs
 
