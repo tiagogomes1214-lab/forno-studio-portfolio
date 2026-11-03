@@ -36,11 +36,18 @@ if (fs.existsSync(environmentFile)) {
   }
 }
 
-for (const name of allow) {
-  if (!process.env[name]) {
-    console.error(`[Discloud] Variavel publica obrigatoria ausente: ${name}`);
-    console.error("Configure as variaveis durante o upload no painel da Discloud.");
-    process.exit(1);
+// O build Docker da Discloud pode não receber as variáveis cadastradas
+// no painel até a execução da aplicação. São valores PÚBLICOS,
+ // exclusivos do portfólio demonstrativo: nenhum segredo é embutido.
+const demoDefaults = {
+  NEXT_PUBLIC_API_URL: "https://forno-studio-api.onrender.com",
+  NEXT_PUBLIC_DEMO_MODE: "true",
+  NEXT_PUBLIC_SITE_URL: "https://fornostudio-tiago.discloud.app",
+};
+for (const [name, value] of Object.entries(demoDefaults)) {
+  if (!process.env[name] || !process.env[name].trim()) {
+    process.env[name] = value;
+    console.log(`[Discloud] ${name} não recebida pelo build; usando valor público de demonstração.`);
   }
 }
 
