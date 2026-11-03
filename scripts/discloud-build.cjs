@@ -79,5 +79,5 @@ function run(args) {
 }
 
 console.log("[Discloud] Instalando dependencias e compilando o frontend Next.js.");
-run(["--prefix", "frontend", "ci"]);
+run(["--prefix", "frontend", "ci", "--include=dev"]);
 run(["--prefix", "frontend", "run", "build"]);
