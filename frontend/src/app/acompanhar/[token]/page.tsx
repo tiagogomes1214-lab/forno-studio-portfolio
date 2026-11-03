@@ -73,12 +73,13 @@ export default function TrackOrderPage() {
   }, [loadOrder]);
 
   const currentStep = order ? stepIndex(order) : -1;
+  const canShowEta = order !== null && order.status !== "Cancelado" && order.status !== "Concluído" && (order.payment_status === "approved" || order.payment_status === "pay_on_delivery") && currentStep < 2;
 
   return (
     <main className="tracking-page">
       <header className="tracking-nav">
         <Link href="/" className="brand"><span className="brand-mark">F.</span><span>FORNO <small>STUDIO PIZZERIA</small></span></Link>
-        <Link href="/" className="tracking-back"><ArrowLeft size={15} /> Voltar à loja</Link>
+        <Link href="/pedir" className="tracking-back"><ArrowLeft size={15} /> Voltar à loja</Link>
       </header>
       <section className="tracking-content">
         <p className="eyebrow red">ACOMPANHAMENTO DO PEDIDO</p>
@@ -89,6 +90,7 @@ export default function TrackOrderPage() {
             <div><h1>Pedido <em>#{String(order.id).padStart(4, "0")}</em></h1><p>Obrigado por pedir no Forno Studio. Acompanhe cada etapa por aqui.</p></div>
             <span className={`tracking-status ${order.status === "Concluído" ? "is-done" : order.status === "Cancelado" ? "is-cancelled" : ""}`}>{order.status}</span>
           </div>
+          {canShowEta && <div className="tracking-eta" role="status"><strong><Clock3 size={22} style={{display:"inline",verticalAlign:"middle",marginRight:9}}/> Previsão: 40 a 60 minutos</strong><p>Tempo estimado de preparo a partir do recebimento ou confirmação do pagamento. Pode variar conforme a demanda; entrega pode levar tempo adicional.</p></div>}
           <div className="tracking-grid">
             <section className="tracking-card tracking-progress">
               <div className="tracking-card-heading"><div><p className="eyebrow red">ANDAMENTO</p><h2>{order.status === "Aguardando pagamento" && order.payment_status !== "approved" ? "Aguardando pagamento" : order.status === "Cancelado" ? "Pedido cancelado" : order.status === "Concluído" ? "Pedido concluído" : "Estamos cuidando do seu pedido"}</h2></div><Clock3 size={21}/></div>
