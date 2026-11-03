@@ -30,3 +30,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m compileall -q backend/app
+      - name: Instalar dependencias e testes da API
+        run: python -m pip install -r backend/requirements.txt pytest
+      - name: Testar endpoints, pedidos e painel
+        run: PYTHONPATH=backend python -m pytest -q backend/tests
