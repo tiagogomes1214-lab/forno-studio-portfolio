@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const siteUrl = "https://forno-studio-portfolio-seven.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forno-studio-portfolio-seven.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
