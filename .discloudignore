@@ -1,0 +1,12 @@
+.git/
+.github/
+backend/
+**/node_modules/
+**/.next/
+**/.env
+**/.env.local
+**/.env.production
+**/.env.*.local
+**/*.log
+**/__pycache__/
+**/.venv/
