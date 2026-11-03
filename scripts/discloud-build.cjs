@@ -85,6 +85,39 @@ function run(args) {
   if (result.status !== 0) process.exit(result.status || 1);
 }
 
-console.log("[Discloud] Instalando dependencias e compilando o frontend Next.js.");
+process.env.DISCLOUD_BUNDLE = "true";
+console.log("[Discloud] Instalando dependencias e compilando o frontend Next.js standalone.");
 run(["--prefix", "frontend", "ci", "--include=dev"]);
 run(["--prefix", "frontend", "run", "build"]);
+
+/**
+ * A Discloud preserva a saída de BUILD em dist/, mas não garante que
+ * frontend/.next e frontend/node_modules sobrevivam ao deploy.
+ * O standalone contém servidor e dependências de produção rastreadas.
+ */
+const frontend = path.join(root, "frontend");
+const standalone = path.join(frontend, ".next", "standalone");
+const dist = path.join(root, "dist");
+const entry = path.join(standalone, "server.js");
+if (!fs.existsSync(entry)) {
+  console.error("[Discloud] O Next não gerou .next/standalone/server.js. Verifique DISCLOUD_BUNDLE=true.");
+  process.exit(1);
+}
+fs.rmSync(dist, { recursive: true, force: true });
+fs.cpSync(standalone, dist, { recursive: true, dereference: true });
+
+const staticDir = path.join(frontend, ".next", "static");
+if (fs.existsSync(staticDir)) {
+  const staticTarget = path.join(dist, ".next", "static");
+  fs.mkdirSync(path.dirname(staticTarget), { recursive: true });
+  fs.cpSync(staticDir, staticTarget, { recursive: true, dereference: true });
+}
+const publicDir = path.join(frontend, "public");
+if (fs.existsSync(publicDir)) {
+  fs.cpSync(publicDir, path.join(dist, "public"), { recursive: true, dereference: true });
+}
+if (!fs.existsSync(path.join(dist, ".next", "BUILD_ID"))) {
+  console.error("[Discloud] BUILD_ID não foi incluído no pacote de produção.");
+  process.exit(1);
+}
+console.log("[Discloud] Pacote standalone gerado em dist/ com .next e arquivos estáticos.");
