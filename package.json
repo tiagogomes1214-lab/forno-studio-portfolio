@@ -4,9 +4,9 @@
   "private": true,
   "description": "Deploy Discloud do frontend Next.js no monorepo Forno Studio",
   "scripts": {
-    "build": "npm --prefix frontend ci && npm --prefix frontend run build",
+    "build": "node scripts/discloud-build.cjs",
     "start": "npm --prefix frontend run start",
     "dev": "npm --prefix frontend run dev",
-    "check": "npm --prefix frontend ci && npm --prefix frontend run build"
+    "check": "node scripts/discloud-build.cjs"
   }
 }
