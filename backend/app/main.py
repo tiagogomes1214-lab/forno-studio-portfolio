@@ -13,14 +13,15 @@ from dotenv import load_dotenv
 # Load configuration before importing database.py, which reads DATABASE_URL.
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session, selectinload
 
+from .admin_auth import SESSION_TTL_SECONDS, login as login_admin, verify_session
 from .database import Base, engine, get_db
 from .models import Order, OrderItem, Product
-from .schemas import CheckoutOut, OrderIn, OrderOut, OrderStatusUpdate, ProductIn, ProductOut, TrackingOut
+from .schemas import AdminCredentials, AdminSessionOut, CheckoutOut, OrderIn, OrderOut, OrderStatusUpdate, ProductIn, ProductOut, TrackingOut
 
 SEED_PRODUCTS = [
     {"name":"Margherita Classica","description":"Massa de fermentação lenta, molho de tomate artesanal, muçarela fior di latte, folhas de manjericão fresco e azeite de oliva extravirgem.","category":"Clássicas","price":39.90,"image":"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85","badge":"Favorita"},
@@ -100,16 +101,9 @@ app.add_middleware(
 )
 
 
-def require_admin(x_admin_user: str | None = Header(default=None), x_admin_password: str | None = Header(default=None)):
-    """Validate credentials on the server; never ship admin secrets to the browser bundle."""
-    expected_user = os.getenv("ADMIN_USERNAME", "").strip()
-    expected_password = os.getenv("ADMIN_PASSWORD", "")
-    if not expected_user or not expected_password:
-        raise HTTPException(status_code=503, detail="Painel indisponível: configure ADMIN_USERNAME e ADMIN_PASSWORD no ambiente do backend.")
-    user_ok = hmac.compare_digest((x_admin_user or "").encode("utf-8"), expected_user.encode("utf-8"))
-    password_ok = hmac.compare_digest((x_admin_password or "").encode("utf-8"), expected_password.encode("utf-8"))
-    if not (user_ok and password_ok):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais administrativas inválidas")
+def require_admin(authorization: str | None = Header(default=None)):
+    """Require a valid, short-lived admin token for protected routes."""
+    verify_session(authorization)
 
 
 def create_order_record(payload: OrderIn, db: Session, *, order_status: str, payment_status: str) -> Order:
@@ -217,6 +211,15 @@ def payment_config():
 @app.get("/api/products", response_model=list[ProductOut])
 def list_products(db: Session = Depends(get_db)):
     return db.query(Product).filter(Product.active.is_(True)).order_by(Product.id).all()
+
+
+@app.post("/api/admin/session", response_model=AdminSessionOut)
+def create_admin_session(payload: AdminCredentials, request: Request, response: Response):
+    """Exchange credentials once for a short-lived token; never cache responses."""
+    client_key = request.client.host if request.client else "unknown"
+    access_token = login_admin(payload.username, payload.password, client_key)
+    response.headers["Cache-Control"] = "no-store"
+    return AdminSessionOut(access_token=access_token, expires_in=SESSION_TTL_SECONDS)
 
 
 @app.get("/api/admin/products", response_model=list[ProductOut], dependencies=[Depends(require_admin)])
